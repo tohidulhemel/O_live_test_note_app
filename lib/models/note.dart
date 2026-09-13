@@ -14,7 +14,6 @@ class Note {
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  // Convert a Note into a Map for SQLite storage.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -25,7 +24,6 @@ class Note {
     };
   }
 
-  // Create a Note from a SQLite row.
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
       id: map['id'] as int?,
@@ -36,7 +34,6 @@ class Note {
     );
   }
 
-  // Useful for producing an updated copy (e.g. when editing).
   Note copyWith({
     int? id,
     String? title,

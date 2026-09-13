@@ -4,7 +4,6 @@ import 'package:sqflite/sqflite.dart';
 import '../models/note.dart';
 
 class DatabaseHelper {
-  // Singleton setup — only one instance/connection for the whole app.
   DatabaseHelper._internal();
   static final DatabaseHelper instance = DatabaseHelper._internal();
 
@@ -37,17 +36,15 @@ class DatabaseHelper {
     );
   }
 
-  /// Insert a new note. Returns the generated id.
   Future<int> insertNote(Note note) async {
     final db = await database;
     return await db.insert(
       _tableName,
-      note.toMap()..remove('id'), // let SQLite auto-generate the id
+      note.toMap()..remove('id'), 
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  /// Update an existing note. Returns number of rows affected.
   Future<int> updateNote(Note note) async {
     final db = await database;
     if (note.id == null) {
@@ -61,7 +58,6 @@ class DatabaseHelper {
     );
   }
 
-  /// Delete a note by id. Returns number of rows affected.
   Future<int> deleteNote(int id) async {
     final db = await database;
     return await db.delete(
@@ -71,7 +67,6 @@ class DatabaseHelper {
     );
   }
 
-  /// Get all notes, most recently updated first.
   Future<List<Note>> getAllNotes() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -81,7 +76,6 @@ class DatabaseHelper {
     return maps.map((map) => Note.fromMap(map)).toList();
   }
 
-  /// Search notes by title (case-insensitive partial match).
   Future<List<Note>> searchNotesByTitle(String query) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(

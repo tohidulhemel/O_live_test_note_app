@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/note.dart';
 import '../widgets/note_card.dart';
-import 'note_detail_screen.dart';
+import 'note_details_screen.dart';
+import 'note_form_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,12 +60,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _openNoteDetail({Note? note}) async {
+  Future<void> _openNoteDetails(Note note) async {
     final changed = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (ctx) => NoteDetailScreen(note: note)),
+      MaterialPageRoute(builder: (ctx) => NoteDetailsScreen(note: note)),
     );
-    // Refresh the list whenever we come back from add/edit/delete.
+    if (changed == true) {
+      _loadNotes(query: _searchQuery);
+    }
+  }
+
+  Future<void> _openNoteForm({Note? note}) async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (ctx) => NoteFormScreen(note: note)),
+    );
     if (changed == true) {
       _loadNotes(query: _searchQuery);
     }
@@ -83,26 +93,33 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('My Notes'),
+        title: const Text('Notes', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        scrolledUnderElevation: 1,
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search notes by title...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: Icon(Icons.clear, color: Colors.grey.shade400),
                         onPressed: () => _searchController.clear(),
                       )
                     : null,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
@@ -114,9 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNoteDetail(),
+        backgroundColor: const Color(0xFF1FAA59),
+        onPressed: () => _openNoteForm(),
         tooltip: 'Add note',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -134,18 +152,31 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                searching ? Icons.search_off : Icons.note_add_outlined,
-                size: 64,
-                color: Colors.grey.shade400,
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  searching ? Icons.search_off : Icons.note_add_outlined,
+                  size: 44,
+                  color: Colors.grey.shade400,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              Text(
+                searching ? 'No results found' : 'No notes yet',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+              ),
+              const SizedBox(height: 6),
               Text(
                 searching
-                    ? 'No notes match "$_searchQuery"'
-                    : 'No notes yet. Tap + to add one!',
+                    ? 'Try searching with a different keyword.'
+                    : 'Tap the + button to create your first note.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13.5),
               ),
             ],
           ),
@@ -162,7 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
           final note = _notes[index];
           return NoteCard(
             note: note,
-            onTap: () => _openNoteDetail(note: note),
+            onTap: () => _openNoteDetails(note),
+            onEdit: () => _openNoteForm(note: note),
             onDelete: () => _deleteNote(note),
           );
         },
